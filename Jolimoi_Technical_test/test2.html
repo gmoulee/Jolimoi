@@ -1,0 +1,64 @@
+<div id="app">
+    <h1>Roman Numeral Conversion</h1>
+    <p>Enter a valid number between 0 and 100</p> 
+    <input v-model="number">
+    <button v-on:click="convert">Convert</button>
+    <input v-model="romannumeral">
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<script>
+    const app = new Vue({
+        el: '#app',
+        data: {
+            number:"",
+            romannumeral: "",
+            cid: ""
+        },
+        created() {
+            this.setupStream();
+        },
+        methods: {
+
+            setupStream() {
+                console.log("Setting up stream")
+                let es = new EventSource("http://localhost:3000/events");
+
+                es.addEventListener('cid', event => {
+                    console.log("client id", event.data)
+                    this.cid = event.data
+                })
+
+                es.addEventListener('message', event => {
+                    console.log("new event", event)
+                    if(event.data === "[]"){
+
+                    }
+                    else if(event.data === "ERROR"){
+                        alert("Enter a valid number between 0 and 100")
+                        this.romannumeral = "";
+                    }
+                    else{
+                        this.romannumeral = event.data
+                    }
+                }, false);
+
+                es.addEventListener('open', event => {
+                    console.log("stream opened", event)
+                }, false)
+
+                es.addEventListener('error', event => {
+                    console.log("Error", event)
+                }, false)
+            },
+
+            convert: function(event){
+                let url = "http://localhost:3000/getRoman?cid="+this.cid+"&number="+this.number
+                axios.get(url).then(response => {
+                })
+            }
+        }
+    })
+</script>
